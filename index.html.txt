@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escáner de Seguridad - Torneos</title>
+    <style>
+        /* Aquí definimos los colores oscuros y luces neón estilo gamer */
+        body {
+            background-color: #0b131f;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .contenedor {
+            background: linear-gradient(145deg, #101f33, #0d1929);
+            border: 1px solid #1e3a5f;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 229, 255, 0.1);
+        }
+        h2 { color: #00e5ff; margin-bottom: 20px; font-size: 24px; }
+        .zona-carga {
+            border: 2px dashed #00e5ff;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            background-color: #0f233c;
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+        .zona-carga:hover { background-color: #142f52; }
+        input[type="file"] { display: none; }
+        .resultado {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none; /* Oculto al principio */
+        }
+        .limpio { background-color: rgba(0, 230, 118, 0.2); color: #00e676; border: 1px solid #00e676; }
+        .peligro { background-color: rgba(255, 23, 68, 0.2); color: #ff1744; border: 1px solid #ff1744; }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+    <h2>SISTEMA DE VERIFICACIÓN</h2>
+    <p style="color: #8a9cae; font-size: 14px;">Sube el archivo de registro (.txt) del iPhone del jugador para analizarlo.</p>
+    
+    <div class="zona-carga" onclick="document.getElementById('archivoInput').click()">
+        <span style="font-size: 40px;">📄</span>
+        <p id="textoCarga">Haz clic aquí para subir el archivo Log</p>
+        <input type="file" id="archivoInput" accept=".txt">
+    </div>
+
+    <div id="bloqueResultado" class="resultado"></div>
+</div>
+
+<script>
+    // El "Cerebro" de la página en JavaScript
+    document.getElementById('archivoInput').addEventListener('change', function(evento) {
+        const archivo = evento.target.files[0];
+        if (!archivo) return;
+
+        document.getElementById('textoCarga').innerText = archivo.name;
+        const lector = new FileReader();
+
+        lector.onload = function(e) {
+            const contenido = e.target.result;
+            const bloqueRes = document.getElementById('bloqueResultado');
+            
+            // PALABRAS PROHIBIDAS (Hacks, Jailbreak, tiendas externas)
+            const alertas = [
+                "cydia://", "sileo://", "TrollStore", "com.saurik.Cydia", 
+                "/var/jb/", "AltStore", "Scarlet", "substitute", "ellekit"
+            ];
+
+            let tramposoDetectado = false;
+
+            // El sistema lee el archivo entero buscando las palabras prohibidas
+            for (let i = 0; i < alertas.length; i++) {
+                if (contenido.toLowerCase().includes(alertas[i].toLowerCase())) {
+                    tramposoDetectado = true;
+                    break;
+                }
+            }
+
+            // Mostrar el resultado en pantalla según lo que encuentre
+            bloqueRes.style.display = "block";
+            if (tramposoDetectado) {
+                bloqueRes.className = "resultado peligro";
+                bloqueRes.innerHTML = "❌ DISPOSITIVO SOSPECHOSO<br><span style='font-size:12px; font-weight:normal;'>Se detectaron rastros de Jailbreak, alteraciones o tiendas no oficiales.</span>";
+            } else {
+                bloqueRes.className = "resultado limpio";
+                bloqueRes.innerHTML = "✓ NINGÚN APP SUSPEITO DETECTADO<br><span style='font-size:12px; font-weight:normal;'>El historial del dispositivo no contiene registros de alteraciones conocidas.</span>";
+            }
+        };
+
+        lector.readAsText(archivo);
+    });
+</script>
+
+</body>
+</html>
